@@ -1,0 +1,826 @@
+
+CBPM File Input API Specification
+ Document Rev 8 : 23-Nov-2011
+-----------------------------------
+
+The CBPM data file input routines provide a standardized method of accessing collections of
+data on disk and storing them in an easily accessed way in local application memory for
+later use.
+
+
+Prerequisites:
+----------------
+Your BASH shell-compatible environment must be set up to contain the laboratory's ACC build
+system environment variables.
+In order to do this one must invoke:
+ACC_SETUP_SCRIPT=/nfs/acc/libs/util/acc_vars.sh
+if ( [ -f ${ACC_SETUP_SCRIPT} ] ); then
+    source ${ACC_SETUP_SCRIPT}
+fi
+A good place for this is in a user's login script such that upon spawning a new terminal,
+the user's environment is configured to use the default, stable ('current') release of
+pre-built accelerator libraries and applications.
+
+
+This API is part of a set of libraries that must be linked against when using it in an 
+applicaiton.  In order to use the standardized file input routines for CBPM turn-by-turn/RAW
+data files one must link against all the supporting software libraries required for the
+mechanism as well.  This mechanism is spread across several supporting libraries.  This means 
+one must link against the following libraries in the order in which they appear here when
+building an application that will use this file input system.
+  GTK+
+  c_utils
+  cbi_net
+  mpmnet
+  BeamInstSupport
+  CBPM-TSHARC 
+
+A good starting CESR_LIBS list to include in one's makefile is:
+CESR_LIBS  := CBPM-TSHARC BeamInstSupport mpmnet cbi_net c_utils
+
+A helpful list of LOCAL_INCS to have for correct building and linking is:
+LOCAL_INCS    := CBPM-TSHARC/include CBPM-TSHARC/comm_include BeamInstSupport/include BeamInstSupport/cesr_intf_include BeamInstSupport/comm_include c_utils/include cfortran/include mpmnet/include cbi_net/include
+
+This linking arrangement may be streamlined to a shorter list in the future, but for the 
+time being all of these are required.
+
+Also, in order to avoid errors when looking for symbols from the GTK+ libraries, you must
+add the following phrases to your makefile(s):
+
+  If using the ACC build system, the makefile(s) will contain a line starting with
+  "LOCAL_CFLAGS".
+    Add 
+  `pkg-config --cflags gtk+-2.0`
+  to this line.  The tick marks are required.
+
+  The makefile should also contain a line starting with
+  "LOCAL_LFLAGS"
+    Add
+  `pkg-config --libs gtk+-2.0`
+  to this line.  Again, the tick marks are required.
+
+
+
+Headers to include in your code:
+-----------------------------------
+In order to access crucial named constants for file reading operation, you must #include
+the BeamInstSupport and CBPM-TSHARC header files
+  #include "cbi_io_constants.h"
+     and
+  #include "cbpm_io_constants.h" 
+These headers provide the values of CBI_MAX_NAME_CHARS, CBPM_HORZ_DIM, and CBPM_VERT_DIM.
+
+
+
+API Functions:
+------------------
+
+The CBPM data file input C Language API for Developers consists of the following functions:
+The underscore at the end of the function name is required.
+(All of these functions are members of the CBPM-TSHARC library.)
+    
+
+int   cbpm_read_rawfile_( int *file_idx )
+xxx   cbpm_read_rawfile_by_name_( char *full_filename, int len ) % Not yet implemented
+
+int   cbpm_rawfile_timestamp_( int *timestamp )
+int   cbpm_rawfile_num_instruments_( void )
+int   cbpm_rawfile_num_bunches_( void )
+int   cbpm_rawfile_num_turns_( void )
+int   cbpm_rawfile_condx_number_( void )
+float cbpm_rawfile_cern_current_( void )
+
+int   cbpm_rawfile_inst_names_( char *name )
+int   cbpm_rawfile_rf_bucket_( int *bunch )
+int   cbpm_rawfile_cesr_index_( char *inst_name ) - UNIMPLEMENTED - placeholder
+float cbpm_rawfile_pedestal_( char *inst_name, int *bunch, int *button )
+float cbpm_rawfile_gain_factor_( char *inst_name, int *bunch, int *button )
+
+int   cbpm_rawfile_raw_ptr_( char *inst_name, int *button, int *dat_ptr )
+int   cbpm_rawfile_tbt_ptr_( char *inst_name, int *button, int *dat_ptr )
+int   cbpm_rawfile_pos_ptr_( char *inst_name, int *plane, int *dat_ptr )
+int   cbpm_rawfile_phase_ptr_( char *inst_name, int *plane, int *dat_ptr )
+
+
+------------------------
+
+
+The CBPM data file input Fortran language API for Developers consists of the following functions:
+(All of these functions are members of the CBPM-TSHARC library.)
+
+
+Integer cbpm_read_rawfile_f( file_idx )
+Integer cbpm_read_rawfile_by_name_f( filename )
+
+Function cbpm_rawfile_timestamp_f( timestamp ) result (retval)
+Function cbpm_rawfile_num_instruments_f( ) result (retval)
+Function cbpm_rawfile_num_bunches_f( ) result (retval)
+Function cbpm_rawfile_num_turns_f( ) result (retval)
+Function cbpm_rawfile_condx_number_f( ) result (retval)
+Function cbpm_rawfile_cern_current_f( ) result (retval)
+
+Function cbpm_rawfile_inst_names_f( name ) result (retval)
+Function cbpm_rawfile_rf_bucket_f( name ) result (retval)
+Functino cbpm_rawfile_cesr_index_f( name ) result (retval) - UNIMPLEMENTED - placeholder
+Function cbpm_rawfile_pedestal_f( inst_name, bunch, button ) result (retval)
+Function cbpm_rawfile_gain_factor_f( inst_name, bunch, button ) result (retval)
+
+Function cbpm_rawfile_raw_ptr_f( inst_name, button, dat_ptr ) result (retval)
+Function cbpm_rawfile_tbt_ptr_f( inst_name, button, dat_ptr ) result (retval)
+Function cbpm_rawfile_pos_ptr_f( inst_name, plane, dat_ptr ) result (retval)
+Function cbpm_rawfile_phase_ptr_f( inst_name, plane, dat_ptr ) result (retval)
+
+
+------------------------
+
+
+The CBPM data file input MATLAB language API for Developers consists of the following functions:
+(All of these functions are provided via MATLAB MEX wrapper functions.  Library loading
+and initialization MATLAB code is provided.)
+NOTE:  Until further notice, the MATLAB support for this file input mechanism is 
+       supported only for 32-bit matlab executables!  Matlab can be run on any machine,
+       but a -glnx86 flag should be used to ensure this mechanism loads correctly.
+       Proper 64-bit support is pending and will be noted here in the future.
+
+Currently Matlab must be run in 32 bit mode, so matlab must be called with the glnx86 flag.
+
+
+cbpm_read_rawfile_m( int *file_idx )
+xxx cbpm_read_rawfile_by_name_m( char *full_filename, int len )  % Not yet implemented
+
+double cbpm_file_timestamp_m( int *timestamp )
+double cbpm_file_num_insts_m( void )
+double cbpm_file_num_bunches_m( void )
+double cbpm_file_num_turns_m( void )
+double cbpm_file_condx_m( void )
+double cbpm_file_current_m( void )
+
+string cbpm_file_inst_locs_m( char *name )
+xxx    cbpm_rawfile_rf_bucket_( int *bunch ) - UNIMPLEMENTED - placeholder
+xxx    cbpm_rawfile_cesr_index_( char *inst_name ) - UNIMPLEMENTED - placeholder
+double cbpm_file_pedestal_m( char *inst_name, int *bunch, int *button )
+double cbpm_file_gain_factor_m( char *inst_name, int *bunch, int *button ) - UNIMPLEMENTED - placeholder
+
+matrix cbpm_file_raw_data_m( inst_location )
+matrix cbpm_file_tbt_m( inst_location )
+matrix cbpm_file_pos_m( inst_location )
+matrix cbpm_file_shaker_phase_m( inst_location )
+
+
+===================================================================================
+
+For a given language, the API is divided into two parts.
+  1) The data reading mechanism:  Reads data from disk and stores in a system of
+     internal data structures for later referencing.
+  2) 'Accessor' functions either return:
+          a) copies of data values directly
+                - or -
+          b) references (pointers) to the start of pre-allocated multi-value data 
+             buffers
+
+===================================================================================
+
+Part 1 - Read (Import) Functions
+
+There are two styles of Import functions.  The first takes a file index value and
+attempts to retrieve the file with that index from the CESR ONLINE data storage
+area.  Failing that, it will try the CESR OFFLINE data storage area before throwing
+an error.
+
+The other style allows for the specfication of the full path of the file name to
+allow reading in data files that do not happen to live in the standardized CESR
+NFS data directories.
+
+For Fortran code:
+  The following statements must appear at the beginning of any code that uses this
+  API in order to correctly utilize the modules provided for the functions described
+  below.
+    use cbpm_read_rawfile_f_mod
+    use cbpm_io_utils_f_mod
+
+
+
+int     cbpm_read_rawfile( int *file_idx )
+Function cbpm_read_rawfile_f( file_idx ) result (retval)
+
+Arguments:
+    - Pointer to integer representing the RAW data file index to load.
+
+Return value:
+    0 (CBI_F_SUCCESS) - If function completed successfully.
+    6 (CBI_F_FAILURE) - If function experienced an error opening the file.
+
+
+int     cbpm_read_rawfile_by_name( char *full_filename, int len )
+Function cbpm_read_rawfile_by_name_f( filename ) result (retval)
+  
+  Arguments:
+    - In C:       NULL-terminated string describing the full path of the data file
+                  to read.
+      In Fortran: A standard space-padded string is the argument.
+
+  Return value:
+    0 (CBI_F_SUCCESS) - If function completed successfully.
+    6 (CBI_F_FAILURE) - If function experienced an error opening the file.
+
+The "by_name" function reads in selected content from a given data file on disk.
+The full path and file name must be given as a string argument.  This function
+will return a status of CBI_F_SUCCESS if the data importation operation completed
+successfully and CBI_F_FAILURE otherwise.
+
+These import functions also sets up all the necessary memory locations/structures
+for storing and using the imported data in a manageable way, facilitated by the
+accessor functions described below.
+
+
+
+Note:
+The internal data structures that hold raw data, and the structures that
+contain automatically calculated values based on this raw data (scaled button values,
+X/Y positions, etc...) are populated upon every call to cbpm_read_rawfile.  The data
+will need to be copied to another location provided by the developer if one wishes to
+preserve a particular set of data when a new call to cbpm_read_rawfile is made.
+
+
+===================================================================================
+
+Part 2 - Accessors
+  Once the data has been imported and supplementary data buffers automatically
+calculated, one may access any of these values by using the appropriate accessor
+function.
+
+
+int      cbpm_rawfile_timestamp_( char *timestamp )
+Function cbpm_rawfile_timestamp_f( timestamp ) result (retval)
+function string = cbpm_raw_timestamp_m( )
+
+   Returns a timestamp string containing the time the measurement was performed.
+   The string returned has a maximum length of CBI_MAX_STRING_LENGTH.
+  
+
+
+
+int      cbpm_rawfile_num_instruments_( void )
+Function cbpm_rawfile_num_instruments_f( ) result (retval)
+function scalar = cbpm_raw_num_instruments_m( )
+  
+   Returns the number of instruments that provided data for the measurement
+
+
+
+
+int      cbpm_rawfile_num_bunches_( void )
+Function cbpm_rawfile_num_bunches_f( ) result (retval)
+function scalar = cbpm_raw_num_bunches_m( )
+
+   Returns the number of bunches acquired in the measurement data file.
+
+
+
+
+int      cbpm_rawfile_num_turns_( void )
+Function cbpm_rawfile_num_turns_f( ) result (retval)
+function scalar = cbpm_raw_num_turns_m( )
+
+  Returns the number of turns acquired for each bunch in the imported
+  measurement data.
+
+
+
+
+int      cbpm_rawfile_condx_number_( void )
+Function cbpm_rawfile_condx_number_f( ) result (retval)
+function scalar = cbpm_raw_condx_number_m( )
+
+   Returns the CESR conditions (CONDX) file index value in place when the measurement
+   was taken.
+
+   The CONDX number is the value obtained from the node "RELATED SETS" element 12 in 
+   the CESR database.
+
+
+
+
+float    cbpm_rawfile_cern_current_( void )
+Function cbpm_rawfile_cern_current_f( ) result (retval)
+
+  Returns a floating point value representing the CESR CERN total current measurement.
+
+
+
+
+int      cbpm_rawfile_inst_names_( char *name )
+Function cbpm_rawfile_inst_names_f( name ) result (retval)
+
+  Upon each call, returns a single pointer (string) to the ID / location string 
+  of the next instrument found in the data file.  "name" will be NULL (blank string
+  for Fortran) for the call made immediately after the last ID string pointer has
+  been returned from the file.  At this point, the caller will have seen every
+  instrument name present in the data file.  There is no need to make another call
+  until cbpm_read_rawfile is called for a different data file.  If this function is 
+  called again after returning a NULL or blank string, it will simply start the 
+  instrument name listing process again returning names starting from the 
+  beginning of the file and iterating through them.
+  
+  Name strings are of the form "12W", "12W2", "8AW", "21E", etc...
+
+  Arguments:
+    - Pointer to string able to receive an instrument name by action of this
+      function.
+
+
+
+
+int      cbpm_rawfile_rf_bucket_( int *bunch )
+Function cbpm_rawfile_rf_bucket_f( bunch) result (retval)
+
+  Returns the CESR RF bucket number for the bunch index provided.
+  The bunch indexing is dependent upon the timing setup that the
+  instrument was in when the measurement was taken.  This function
+  takes that fact into account automatically.
+
+  Arguments:
+    - bunch index (by reference)
+
+
+
+
+float cbpm_rawfile_pedestal_( char *inst_location, int *bunch, int *button )
+Function cbpm_rawfile_pedestal_( inst_location, bunch, button ) result (retval)
+
+  Returns the pedestal value stored for the given bunch index and button.
+
+  Arguments:
+    - Pointer to the instrument ID / location string for the BPM desired
+    - Bunch index (First bunch acquired is index 1)
+    - Button index (0,1,2,3)
+
+
+
+
+float cbpm_rawfile_gain_factor_( char *inst_location, int *bunch, int *button ) 
+Function cbpm_rawfile_gain_factor_( inst_location, bunch, button ) result (retval)
+
+  Returns the gain scale factor stored for the given bunch index and button.
+
+  Arguments:
+    - Pointer to the instrument ID / location string for the BPM desired
+    - Bunch index (First bunch acquired is index 1)
+    - Button index (0,1,2,3)
+
+
+
+
+int      cbpm_rawfile_raw_ptr_( char *inst_location, int *button, int *dat_ptr )
+Function cbpm_rawfile_raw_ptr_f( inst_location, button, dat_ptr ) result (retval)
+
+  Returns an integer pointer (array) to the first buffer location of a particular BPM's 
+  signal input buffer (i.e. button).  These values are the RAW ADC values acquired.
+
+  Data organization:
+  The data are ordered in the following fashion
+  For each bunch that is digitized, the data for all turns appears in order, then
+  so on for each subsequent bunch.  This scheme applies to raw data obtained via this
+  function as well as turn-by-turn (TBT, ped-subtracted and scaled) data, and position
+  data accessed by the next several functions described below.
+
+  Arguments:
+    - Pointer to the instrument ID / location string for the BPM desired
+    - Pointer to integer value for the button (card) from where the data came.
+       Valid values are  <0, 1, 2, 3>
+    - Pointer to (int) data array to fill
+
+
+
+
+
+int      cbpm_rawfile_tbt_ptr_( char *inst_location, int *button, int *dat_ptr )
+Function cbpm_rawfile_tbt_ptr_f( inst_location, button, dat_ptr ) result (retval)
+
+  Returns a float pointer (array) to the first buffer location of a particular BPM's
+  signal input buffer (i.e. button).  These values are PEDESTAL-SUBTRACTED and 
+  GAIN-SCALED already, i.e. in "physics units".
+
+  Data organization:
+  The data are ordered in the following fashion
+  For each bunch that is digitized, the data for all turns appears in order, then
+  so on for each subsequent bunch.
+
+  Arguments:
+    - Pointer to the instrument ID / location string for the BPM desired
+    - Pointer to integer value for the button (card) from where the data came.
+       Valid values are  <0, 1, 2, 3>
+    - Pointer to (float) data array to fill
+
+
+
+
+
+int      cbpm_rawfile_pos_ptr_( char *inst_location, int *plane, int *dat_ptr )
+Function cbpm_rawfile_pos_ptr_f( inst_location, plane, dat_ptr ) result (retval)
+
+  Returns a float pointer (array) to the first buffer location of a particular BPM's
+  position value for the plane specified, either horizontal or vertical.
+  The positions are not stored in the data file, but are calculated and stored
+  in memory upon execution of the Part 1 import function.  The positions are
+  calculated for every turn acquired using the fully corrected PEDESTAL-SUBTRACTED
+  and GAIN-SCALED values for the gain setting employed during acquisition.
+
+  Data organization:
+  The data are ordered in the following fashion
+  For each bunch that is digitized, the data for all turns appears in order, then
+  so on for each subsequent bunch.
+
+  Arguments:
+    - Pointer to the instrument ID / location string for the BPM desired
+    - Integer value for the transverse plane of beam displacement to access
+       Valid values are  <CBPM_HORZ_DIM, CBPM_VERT_DIM>
+    - Pointer to (float) data array to fill
+
+
+
+
+int      cbpm_rawfile_phase_ptr_( char *inst_location, int *plane, int *dat_ptr )
+Function cbpm_rawfile_phase_ptr_f( inst_location, plane, dat_ptr ) result (retval)
+
+  Returns an integer pointer (Array) to the first buffer location (first turn) of a 
+  particular BPM's encoded shaker phase word.  This is the bit pattern encoded onto
+  the command word embedded into the CESR clock signal turns marker burst.  
+  The bit pattern is made available in two parts, one for the encoded horizontal
+  shaker phase and the other for vertical.
+
+  Data organization:
+  The data are ordered in the following fashion
+  For each bunch that is digitized, the data for all turns appears in order, then
+  so on for each subsequent bunch.
+
+  Arguments:
+    - Pointer to the instrument ID / location string for the BPM desired
+    - Integer value for the transverse plane of shaker phase to access
+       Valid values are  <CBPM_HORZ_DIM, CBPM_VERT_DIM>
+    - Pointer to (float) data array to fill
+
+
+
+
+
+
+Below are valid code examples that can be used in a main routine for demonstrating
+file input mechanics.
+- - - - - - - - - - - - - - -
+
+The example programs live in CBPM-TSHARC and can be build with the ACC build system
+by invoking gmake -f M.C_input_test  or  gmake -f M.F_input_test for C and Fortran
+programs, respectively.
+
+Functioning makefiles for these examples can be found in the ACC release's 
+${ACC_REL}/src/CBPM-TSHARC directory.
+   The file names are:
+   M.C_input_test
+   M.F_input_test
+
+
+
+=================================================================================
+C Language Example:
+=================================================================================
+// Core instrumentation library
+//-------------------------------------
+#include "cbi_core_includes.h"
+
+
+// Platform [BPM, TigerSHARC-based]
+//---------------------------------------
+#include "cbpm_includes.h"
+
+
+//#define  TEST_FILE_IDX     4018
+#define  TEST_FILE_IDX     4080
+
+int main( int argc, char * argv[] ) {
+    
+  int status;
+  int file_idx = TEST_FILE_IDX;
+
+  printf("\nAttempting to open RAW DATA file %d from central CESR datafile location...\n", file_idx);
+
+  status = cbpm_read_rawfile_( &file_idx );
+  if (status != CBI_F_SUCCESS) {
+    printf( "Error opening file for reading... exiting.\n");
+    exit(1);
+  }
+  
+  float *fdata;
+  int   *idata;
+  
+  int button  = 0;
+  int button0 = 0;
+  int button1 = 1;
+  int button2 = 2;
+  int button3 = 3;
+
+ 
+  char timestamp2[50];
+  printf("Testing cbpm_rawfile_timestamp_:\n");
+  cbpm_rawfile_timestamp_( timestamp2 );
+  printf("  timestamp = \"%s\"\n", timestamp2 );
+
+
+  int num_instruments = cbpm_rawfile_num_instruments_();
+  printf("Testing cbpm_rawfile_num_instruments_:\n");
+  printf("  num_instruments = %d\n", num_instruments );
+
+  
+  printf("Testing cbpm_rawfile_num_bunches_:\n");
+  printf("  num_bunches     = %d\n", cbpm_rawfile_num_bunches_() );
+
+
+  printf("Testing cbpm_rawfile_num_turns_:\n");
+  printf("  num_turns       = %d\n", cbpm_rawfile_num_turns_() );
+
+
+  printf("Testing cbpm_rawfile_condx_number_:\n");
+  printf("  CONDX number    = %d\n", cbpm_rawfile_condx_number_() );
+  
+
+  char name[20] = ".";
+  int namecount = 0;
+  char names[110][20];
+  cbpm_rawfile_inst_names_( name );
+  while ( strcmp(name, "") != 0 ) {
+    strcpy( names[namecount], name );
+    namecount++;
+    cbpm_rawfile_inst_names_( name );
+  }
+
+  float ped;
+  int   count;
+  char  location[20];
+  for (count = 0; count < num_instruments; count++) {
+
+    strcpy( location, names[count] );
+    printf("\n\nLocation = %s\n", location);
+
+
+    button0 = 0;
+    int bunch = 0;
+    printf("PED: %f   %f   %f   %f\n", 
+	   cbpm_rawfile_pedestal_(&location, &bunch, &button0),
+	   cbpm_rawfile_pedestal_(&location, &bunch, &button1),
+	   cbpm_rawfile_pedestal_(&location, &bunch, &button2),
+	   cbpm_rawfile_pedestal_(&location, &bunch, &button3)
+	   );
+
+
+    printf("Gain factor: %f   %f   %f   %f\n",
+	   cbpm_rawfile_gain_factor_(&location, &bunch, &button0),
+	   cbpm_rawfile_gain_factor_(&location, &bunch, &button1),
+	   cbpm_rawfile_gain_factor_(&location, &bunch, &button2),
+	   cbpm_rawfile_gain_factor_(&location, &bunch, &button3)
+	   );
+
+
+    cbpm_rawfile_raw_ptr_( &location, &button0, &idata );
+    printf("raw : %d", *idata);
+    cbpm_rawfile_raw_ptr_( &location, &button1, &idata );
+    printf("   %d ", *idata);
+    cbpm_rawfile_raw_ptr_( &location, &button2, &idata );
+    printf("   %d ", *idata);
+    cbpm_rawfile_raw_ptr_( &location, &button3, &idata );
+    printf("   %d\n", *idata);
+
+
+    cbpm_rawfile_tbt_ptr_( &location, &button0, &fdata );
+    printf("TBT: %f", *fdata );
+    cbpm_rawfile_tbt_ptr_( &location, &button1, &fdata );
+    printf("   %f", *fdata );
+    cbpm_rawfile_tbt_ptr_( &location, &button2, &fdata );
+    printf("   %f", *fdata );
+    cbpm_rawfile_tbt_ptr_( &location, &button3, &fdata );
+    printf("   %f\n", *fdata );
+
+
+    int dim    = CBPM_HORZ_DIM;
+    cbpm_rawfile_pos_ptr_( &location, &dim, &fdata );
+    printf("X pos:  %f\n", *fdata );
+    dim = CBPM_VERT_DIM;
+    cbpm_rawfile_pos_ptr_( &location, &dim, &fdata );
+    printf("Y pos:  %f\n", *fdata );
+
+
+    dim = CBPM_HORZ_DIM;
+    cbpm_rawfile_phase_ptr_( &location, &dim, &idata );
+    printf("Phase word: %x\n", *(idata+0) );
+    printf("            %x\n", *(idata+1) );
+    printf("            %x\n", *(idata+2) );
+    printf("            %x\n", *(idata+3) );
+
+  }
+  
+  file_idx = 4079;
+  printf("\nAttempting to open RAW DATA file %d from central CESR datafile location...\n", file_idx);
+
+  status = cbpm_read_rawfile_( &file_idx );
+  if (status != CBI_F_SUCCESS) {
+    printf( "Error opening file for reading... exiting.\n");
+    exit(1);
+  }  
+
+  exit(0);
+
+} // end main
+
+
+
+
+
+
+=================================================================================
+Fortran Language Example:
+=================================================================================
+!
+! Test program for calling a C function wrapped in a Fortran function for
+! reading a raw data file (RD-V3 or later).
+!
+#include "cbi_io_constants.h"
+#include "cbpm_io_constants.h"
+
+
+PROGRAM fort_test
+
+  use cbpm_read_rawfile_f_mod
+  use cbpm_io_utils_f_mod
+
+  Implicit None
+  
+  Integer retval, num_bunches, num_turns, values, button, bunch, inst, val
+  Real fretval0, fretval1, fretval2, fretval3
+  
+  
+  ! Filename must be NULL terminated before being passed to cbpm_read_rawfile_f!
+  !Character*(60) :: filename = "/nfs/cesr/online/instr/data/cbpmII/raw/04/RD-004080.dat"//CHAR(0)
+  
+  ! String for holding the instrument identifier returned from cbpm_rawfile_inst_names_f
+  Character*(6)  :: inst_name
+  
+  Integer  raw_array0(4096)
+  Integer  raw_array1(4096)
+  Integer  raw_array2(4096)
+  Integer  raw_array3(4096)
+  
+  Real*4   tbt_array0(4096)
+  Real*4   tbt_array1(4096)
+  Real*4   tbt_array2(4096)
+  Real*4   tbt_array3(4096)
+  
+  Real*4   pos_array_h(4096)
+  Real*4   pos_array_v(4096)
+  
+  Integer  phase_array_h(4096)
+  Integer  phase_array_v(4096)
+  
+  Integer  num_instruments
+  
+  
+  ! Read data from file, specified by file index number.
+  Integer  file_idx
+  file_idx = 4080
+  retval = cbpm_read_rawfile_f( file_idx )
+  print *,"cbpm_read_rawfile_f returned: ",retval
+  
+  
+  !! Disable the above clause and enable this one instead for
+  !! access by full path name of file.
+  !!retval = cbpm_read_rawfile_by_name_f( filename )
+  !!print *,"cbpm_read_rawfile_by_name_f returned: ",retval
+  
+  
+  num_instruments = cbpm_rawfile_num_instruments_f()
+  
+  
+  ! Get key numerical values
+  num_bunches = cbpm_rawfile_num_bunches_f()
+  print *,"Num bunches = ", num_bunches
+  
+  num_turns = cbpm_rawfile_num_turns_f()
+  print *,"Num turns = ", num_turns
+  
+  values = num_bunches * num_turns
+  
+  print *,"VALUES = ",values
+  
+  bunch  = 0
+  button = 0
+  
+  
+  ! Get the instrument names
+  do inst = 1, num_instruments
+     
+     retval = cbpm_rawfile_inst_names_f( inst_name )
+     print *,"-->",inst_name
+     
+     
+     button = 0
+     fretval0 = cbpm_rawfile_pedestal_f( inst_name, bunch, button )
+     button = 1
+     fretval1 = cbpm_rawfile_pedestal_f( inst_name, bunch, button )
+     button = 2
+     fretval2 = cbpm_rawfile_pedestal_f( inst_name, bunch, button )
+     button = 3
+     fretval3 = cbpm_rawfile_pedestal_f( inst_name, bunch, button )
+     print *,'pedestal_f: ', fretval0, fretval1, fretval2, fretval3
+     
+     
+     button = 0
+     fretval0 = cbpm_rawfile_gain_factor_f( inst_name, bunch, button )
+     button = 1
+     fretval1 = cbpm_rawfile_gain_factor_f( inst_name, bunch, button )
+     button = 2
+     fretval2 = cbpm_rawfile_gain_factor_f( inst_name, bunch, button )
+     button = 3
+     fretval3 = cbpm_rawfile_gain_factor_f( inst_name, bunch, button )
+     print *,'gain_f    : ', fretval0, fretval1, fretval2, fretval3
+     
+     
+     button = 0
+     retval = cbpm_rawfile_raw_ptr_f( inst_name, button, raw_array0 )
+     button = 1
+     retval = cbpm_rawfile_raw_ptr_f( inst_name, button, raw_array1 )
+     button = 2
+     retval = cbpm_rawfile_raw_ptr_f( inst_name, button, raw_array2 )
+     button = 3
+     retval = cbpm_rawfile_raw_ptr_f( inst_name, button, raw_array3 )
+     print *,'raw_f     : ', raw_array0(1), raw_array1(1), raw_array2(1), raw_array3(1)
+     
+     
+     button = 0
+     retval = cbpm_rawfile_tbt_ptr_f( inst_name, button, tbt_array0 )
+     button = 1
+     retval = cbpm_rawfile_tbt_ptr_f( inst_name, button, tbt_array1 )
+     button = 2
+     retval = cbpm_rawfile_tbt_ptr_f( inst_name, button, tbt_array2 )
+     button = 3
+     retval = cbpm_rawfile_tbt_ptr_f( inst_name, button, tbt_array3 )
+     print *,'tbt_f     : ', tbt_array0(1), tbt_array1(1), tbt_array2(1), tbt_array3(1)  
+     
+     
+     retval = cbpm_rawfile_pos_ptr_f( inst_name, CBPM_HORZ_DIM, pos_array_h )
+     retval = cbpm_rawfile_pos_ptr_f( inst_name, CBPM_VERT_DIM, pos_array_v )
+     print *,'pos_f     : ', pos_array_h(1), pos_array_v(1)
+     
+     
+     retval = cbpm_rawfile_phase_ptr_f( inst_name, CBPM_HORZ_DIM, phase_array_h )
+     retval = cbpm_rawfile_phase_ptr_f( inst_name, CBPM_VERT_DIM, phase_array_v )
+     print *,'phase_f   : ', phase_array_h(1), phase_array_v(1)
+     
+     
+  end do
+  
+end program fort_test
+
+
+
+
+=================================================================================
+MATLAB Language Example:
+=================================================================================
+
+
+%------------------------------------------------------------------
+% Simple example function that loads all MEX-wrapped libraries
+% necessary for CBPM file input operations, reads in a 
+% CBPM raw data file, and then provides access to select file
+% data components as native MATLAB data types.
+%------------------------------------------------------------------
+function cbpmFileInputDemo( )
+       
+    addpath([getenv('ACC_RELEASE_DIR') '/CBPM-TSHARC/matlab']); ACC_Load_CBPM_input();
+
+    cbpm_read_rawfile_m( 4080 );
+    
+    timestamp = cbpm_file_timestamp_m()
+    bunches = cbpm_file_num_bunches_m()
+    num_insts = cbpm_file_num_insts_m()
+    turns = cbpm_file_num_turns_m()
+    cern_current = cbpm_file_current_m()
+    condx = cbpm_file_condx_m()
+    
+%     bucket = cbpm_file_rf_bucket_m(1) - UNIMPLEMENTED - placeholder
+
+    for num = drange(1:num_insts)
+      num
+      loc = cbpm_file_inst_locs_m()
+%       index = cbpm_file_cesr_index_m(loc) - UNIMPLEMENTED - placeholder
+    end
+
+    ped = cbpm_file_pedestal_m( '2W', 1, 0 )
+    ped = cbpm_file_pedestal_m( '2W', 1, 1 )
+    ped = cbpm_file_pedestal_m( '2W', 1, 2 )
+    ped = cbpm_file_pedestal_m( '2W', 1, 3 )
+    
+    dat = cbpm_file_raw_data_m( '1W' )
+    dat = cbpm_file_tbt_data_m( '1W' )
+    dat = cbpm_file_pos_data_m( '1W' )
+    dat = cbpm_file_shaker_phase_m( '1W' )
+   
+end

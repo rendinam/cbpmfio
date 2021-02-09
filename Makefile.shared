@@ -1,0 +1,66 @@
+#
+# file: Makefile.shared
+#
+# description: Makefile for shared object version of cbpmfio BPM file
+#              I/O library.  The .so version of the library is required
+#              in order to use the data input mechanism from within Matlab.
+#
+# Library name definitions
+#
+LIBNO = 0.1
+LIBNAME = cbpmfio
+
+OUTPUT_DIR = ../solib
+
+LIBSHARED = lib$(LIBNAME).so.$(LIBNO)
+SONAME = lib$(LIBNAME).so
+REL_SOLIBS_DIR = $(ACC_RELEASE_DIR)/solib
+
+
+# Include dirs for header files
+INC_FLAGS = -I./include
+
+# Object files to produce
+LIBOBJS = code/cbpmfio_bunch_pattern.o \
+	code/cbpmfio_defs.o \
+	code/cbpmfio_file_subdir.o \
+	code/cbpmfio_map_addresses_to_field.o \
+	code/cbpmfio_open_raw_via_index.o \
+	code/cbpmfio_rw_cesr_header.o \
+	code/cbpmfio_rw_file_header.o \
+	code/cbpmfio_rw_file_section.o \
+	code/cbpmfio_rw_instrument_header.o \
+	code/cbpmfio_scan_line_input.o \
+	code/cbpmfio_scan_line_output.o \
+	code/cbpmfio_string_manip.o \
+	code/cbpmfio_mem_mgmt.o \
+	api/cbpmfio_accessors.o \
+	api/cbpm_read_rawfile.o
+
+
+# Compiler and linker flags
+CC = gcc
+CFLAGS = -std=c99 -Wall -g -fPIC $(INC_FLAGS)
+LDFLAGS = -Wall -g -D_REENTRANT
+
+lib: $(LIBSHARED)
+
+
+$(LIBSHARED): $(LIBOBJS) $(INCLUDES)
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -Wl,-soname,$(SONAME) -o $@ $(LIBOBJS) -L$(OUTPUT_DIR) -L$(REL_SOLIBS_DIR) -lc
+	chmod 644 $@
+	test -d $(OUTPUT_DIR) || mkdir -p $(OUTPUT_DIR)
+	mv $@ $(OUTPUT_DIR)
+	ln -sf $(OUTPUT_DIR)/$(LIBSHARED) $(OUTPUT_DIR)/$(SONAME)
+
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+clean:
+	rm $(LIBOBJS)
+
+
+production: lib
+
+

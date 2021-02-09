@@ -1,0 +1,41 @@
+#
+# description: Makefile for CBPMFIO Matlab MEX gateway functions
+#
+
+SOLIBDIR := ../production/lib -L../solib
+MEX_SOURCE_DIR := ./matlab
+INCLUDES := -Iinclude \
+	-I$(ACC_RELEASE_DIR)/cbpmfio/include
+
+
+MEXOPTS := matlab/mexopts.sh
+
+all:
+	@echo -e "\n\nBuilding MEX wrapper functions...\n"
+
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_condx_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_current_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_inst_locs_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_num_bunches_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_num_insts_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_num_turns_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_pedestal_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_gain_factor_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_pos_data_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_raw_data_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_rf_bucket_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_shaker_phase_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_tbt_data_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_file_timestamp_m.c -L$(SOLIBDIR) -lcbpmfio;
+	@mex -f $(MEXOPTS) -g $(INCLUDES) $(MEX_SOURCE_DIR)/cbpm_read_rawfile_m.c -L$(SOLIBDIR) -lcbpmfio;
+
+	@mv -f *.mexa64 $(MEX_SOURCE_DIR) > /dev/null 2>&1 || true
+
+clean:
+	@rm -f $(MEX_SOURCE_DIR)/*.mexa64 || true
+
+
+production: all
+
+debug:
+	@test
